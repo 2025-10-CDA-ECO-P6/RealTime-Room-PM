@@ -1,0 +1,29 @@
+node_modules
+dist
+.git
+.gitignore
+Dockerfile
+apps/*/dist
+packages/*/dist
+.env
+.env.*
+
+# Logs
+*.log
+npm-debug.log*
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Tests et coverage
+**/*.test.ts
+**/*.spec.ts
+coverage/
+
+# README
+*.md

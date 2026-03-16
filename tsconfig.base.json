@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "ES2020",
+    "moduleResolution": "Node",
+    "declaration": true,
+    "strict": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "allowSyntheticDefaultImports": true
+  },
+  "baseUrl": ".",
+  "paths": {
+    "@repo/backend-domain": ["packages/backend/domain/src"],
+    "@repo/backend-infrastructure": ["packages/backend/infrastructure/src"],
+    "@repo/backend-application": ["packages/backend/application/src"]
+  }
+}
