@@ -1,9 +1,9 @@
 {
-  "name": "@repo/backend-domain",
+  "name": "@repo/di",
   "version": "1.0.0",
-  "private": true,
+    "private": true,
   "description": "",
-  "main": "dist/index.js",
+  "main": "index.js",
   "scripts": {
     "build": "tsc -b",
     "test": "echo \"No test specified\" && exit 0"
@@ -11,13 +11,8 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "packageManager": "pnpm@10.30.0",
-  "dependencies": {
-    "@repo/di": "workspace:*"
-  },
+  "packageManager": "pnpm@10.32.1",
   "devDependencies": {
-    "ts-node": "^10.9.2",
-    "@types/node": "^24.10.13",
     "typescript": "^5.9.3"
   }
 }

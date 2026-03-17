@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chat Test</title>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <style>
+      body {
+        font-family: Arial;
+        max-width: 600px;
+        margin: 50px auto;
+        padding: 20px;
+      }
+      h1 {
+        text-align: center;
+      }
+      #messages {
+        border: 1px solid #ccc;
+        height: 300px;
+        overflow-y: auto;
+        padding: 10px;
+        margin: 20px 0;
+        background: #f9f9f9;
+        border-radius: 5px;
+      }
+      .message {
+        margin: 8px 0;
+        padding: 8px;
+        border-radius: 5px;
+        word-wrap: break-word;
+      }
+      .message.sent {
+        background: #e3f2fd;
+        text-align: right;
+        margin-left: 20%;
+      }
+      .message.received {
+        background: #f1f8e9;
+        margin-right: 20%;
+      }
+      .message.system {
+        background: #fff3e0;
+        text-align: center;
+        font-style: italic;
+      }
+      .message.error {
+        background: #ffebee;
+        color: #c62828;
+      }
+      .input-group {
+        display: flex;
+        gap: 10px;
+        margin: 10px 0;
+      }
+      input {
+        flex: 1;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 3px;
+        font-size: 14px;
+      }
+      button {
+        padding: 10px 20px;
+        background: #2196F3;
+        color: white;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+      button:hover {
+        background: #1976D2;
+      }
+      button:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
+      .status {
+        padding: 12px;
+        margin: 10px 0;
+        border-radius: 5px;
+        font-weight: bold;
+        text-align: center;
+      }
+      .status.connected {
+        background: #c8e6c9;
+        color: #2e7d32;
+      }
+      .status.disconnected {
+        background: #ffcccc;
+        color: #c62828;
+      }
+      .status.connecting {
+        background: #fff9c4;
+        color: #f57f17;
+      }
+      .info-box {
+        background: #e8f5e9;
+        padding: 10px;
+        border-radius: 5px;
+        margin: 10px 0;
+        font-size: 12px;
+        color: #2e7d32;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>💬 Chat Test</h1>
+
+    <div id="status" class="status disconnected">❌ Disconnected</div>
+    <div class="info-box" id="info">Connecting...</div>
+
+    <div>
+      <label><strong>User ID:</strong></label>
+      <input type="text" id="userId" value="user1" placeholder="Enter user ID" />
+    </div>
+
+    <div id="messages"></div>
+
+    <div class="input-group">
+      <input type="text" id="message" placeholder="Type a message..." autocomplete="off" />
+      <button onclick="sendMessage()" id="sendBtn">Send</button>
+    </div>
+
+    <button onclick="testHealth()" style="width: 100%; margin-top: 10px; background: #4CAF50;">
+      Test Health Endpoint
+    </button>
+
+    <script>
+      const SERVER_URL = "http://localhost:3000";
+      let socket = null;
+
+      const userId = document.getElementById("userId");
+      const messageInput = document.getElementById("message");
+      const messagesDiv = document.getElementById("messages");
+      const statusDiv = document.getElementById("status");
+      const infoDiv = document.getElementById("info");
+      const sendBtn = document.getElementById("sendBtn");
+
+      // ========== Socket.io Connection ==========
+      console.log("📡 Initializing Socket.io connection to:", SERVER_URL);
+
+      socket = io(SERVER_URL, {
+        reconnection: true,
+        reconnectionDelay: 1000,
+        reconnectionDelayMax: 5000,
+        reconnectionAttempts: 5,
+        transports: ["websocket", "polling"],
+      });
+
+      // ========== Socket Events ==========
+      socket.on("connect", () => {
+        console.log("✅ Socket connected! ID:", socket.id);
+        statusDiv.className = "status connected";
+        statusDiv.textContent = "✅ Connected (" + socket.id + ")";
+        infoDiv.textContent = "✅ Connected to server";
+        infoDiv.style.background = "#c8e6c9";
+        sendBtn.disabled = false;
+        addMessage("System", "Connected to chat server", "system");
+      });
+
+      socket.on("disconnect", (reason) => {
+        console.log("❌ Socket disconnected. Reason:", reason);
+        statusDiv.className = "status disconnected";
+        statusDiv.textContent = "❌ Disconnected (" + reason + ")";
+        infoDiv.textContent = "❌ Disconnected from server: " + reason;
+        infoDiv.style.background = "#ffcccc";
+        sendBtn.disabled = true;
+        addMessage("System", "Disconnected from chat server: " + reason, "system");
+      });
+
+      socket.on("connect_error", (error) => {
+        console.error("❌ Connection error:", error);
+        statusDiv.className = "status disconnected";
+        statusDiv.textContent = "❌ Connection Error";
+        infoDiv.textContent = "Connection error: " + error.message;
+        infoDiv.style.background = "#ffcccc";
+        addMessage("Error", "Connection error: " + error.message, "error");
+      });
+
+      socket.on("receive_message", (data) => {
+        console.log("📬 Received message:", data);
+        addMessage(data.userId, data.content, "received");
+      });
+
+      socket.on("error", (error) => {
+        console.error("❌ Socket error:", error);
+        addMessage("Error", error.message || JSON.stringify(error), "error");
+      });
+
+      // ========== Functions ==========
+      function sendMessage() {
+        const content = messageInput.value.trim();
+        const user = userId.value.trim();
+
+        if (!content) {
+          alert("Please enter a message");
+          return;
+        }
+
+        if (!user) {
+          alert("Please enter a user ID");
+          return;
+        }
+
+        if (!socket.connected) {
+          alert("Not connected to server");
+          return;
+        }
+
+        console.log("📤 Sending message:", { userId: user, content });
+        socket.emit("send_message", { userId: user, content });
+
+        addMessage(user, content, "sent");
+        messageInput.value = "";
+        messageInput.focus();
+      }
+
+      function addMessage(user, text, type = "received") {
+        const div = document.createElement("div");
+        div.className = `message ${type}`;
+        const timestamp = new Date().toLocaleTimeString();
+        div.textContent = `[${timestamp}] ${user}: ${text}`;
+        messagesDiv.appendChild(div);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      }
+
+      messageInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") sendMessage();
+      });
+
+      // ========== Test Endpoints ==========
+      async function testHealth() {
+        try {
+          console.log("🏥 Testing health endpoint...");
+          const res = await fetch(`${SERVER_URL}/health`);
+          const data = await res.json();
+          console.log("✅ Health check:", data);
+          addMessage("System", "Health check: " + JSON.stringify(data), "system");
+        } catch (err) {
+          console.error("❌ Health check error:", err);
+          addMessage("Error", "Health check failed: " + err.message, "error");
+        }
+      }
+
+      async function testHttpApi() {
+        try {
+          console.log("🌐 Testing HTTP API...");
+          const res = await fetch(`${SERVER_URL}/api/messages`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId: userId.value, content: "HTTP Test" }),
+          });
+          const data = await res.json();
+          console.log("✅ HTTP Response:", data);
+          addMessage("System", "HTTP API: " + JSON.stringify(data), "system");
+        } catch (err) {
+          console.error("❌ HTTP Error:", err);
+          addMessage("Error", "HTTP API error: " + err.message, "error");
+        }
+      }
+
+      // Initial log
+      console.log(
+        "📱 Chat client loaded. Connect to:",
+        SERVER_URL
+      );
+      infoDiv.textContent = "Connecting to " + SERVER_URL + "...";
+      infoDiv.style.background = "#fff9c4";
+    </script>
+  </body>
+</html>

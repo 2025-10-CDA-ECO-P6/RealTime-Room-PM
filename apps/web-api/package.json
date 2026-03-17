@@ -5,7 +5,7 @@
   "main": "dist/server.js",
   "scripts": {
     "build": "tsc -b",
-    "dev": "ts-node -r tsconfig-paths/register src/server.ts",
+    "dev": "ts-node -r tsconfig-paths/register server.ts",
     "start": "node dist/server.js"
   },
   "keywords": [],
@@ -14,8 +14,11 @@
   "packageManager": "pnpm@10.30.0",
   "dependencies": {
     "@repo/backend-application": "workspace:*",
+    "@repo/backend-infrastructure": "workspace:*",
+    "@repo/di": "workspace:*",
     "dotenv": "^17.3.1",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "socket.io": "^4.8.3"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",

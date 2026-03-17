@@ -13,10 +13,14 @@
   "license": "ISC",
   "packageManager": "pnpm@10.30.0",
   "dependencies": {
-    "@repo/backend-domain": "workspace:*"
+    "@repo/backend-application": "workspace:*",
+    "@repo/backend-domain": "workspace:*",
+    "@repo/di": "workspace:*",
+    "socket.io": "^4.8.3"
   },
   "devDependencies": {
+    "ts-node": "^10.9.2",
+    "@types/node": "^24.10.13",
     "typescript": "^5.9.3"
   }
 }
-

@@ -14,6 +14,11 @@
   "packageManager": "pnpm@10.30.0",
   "dependencies": {
     "@repo/backend-domain": "workspace:*",
-    "@repo/backend-infrastructure": "workspace:*"
+    "@repo/di": "workspace:*"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.2",
+    "@types/node": "^24.10.13",
+    "typescript": "^5.9.3"
   }
 }

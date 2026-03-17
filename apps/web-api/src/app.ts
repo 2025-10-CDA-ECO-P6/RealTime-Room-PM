@@ -1,13 +1,27 @@
-import express from "express";
-import { checkApplication } from "@repo/backend-application";
+import express, { Express } from "express";
+import { AppConfig } from "./configs/AppConfig";
+import {
+  CorsMiddleware,
+  ErrorHandlerMiddleware,
+  NotFoundMiddleware,
+  RequestLoggerMiddleware,
+} from "./core/middlewares";
+import { DependencyInjectionExtension, HealthRoutesExtension, RequestContextExtension } from "./core/extensions";
 
-const app = express();
+export function createApp(appConfig: AppConfig): Express {
+  const app = express();
 
+  app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
+  app.use(RequestLoggerMiddleware);
+  app.use(CorsMiddleware);
 
-app.get("/", (_req, res) => {
-  const result = checkApplication();
-  console.log("Check result:", result);
-  res.send(`Check finished: ${result}`);
-});
+  app.use(DependencyInjectionExtension(appConfig.container, appConfig.socketServer));
+  app.use(RequestContextExtension());
+  app.use(HealthRoutesExtension());
+  
+  app.use(ErrorHandlerMiddleware);
+  app.use(NotFoundMiddleware);
 
-export default app;
+  return app;
+}

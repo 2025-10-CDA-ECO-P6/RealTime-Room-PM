@@ -15,13 +15,15 @@
     "paths": {
       "@repo/backend-domain": ["packages/backend/domain/src"],
       "@repo/backend-infrastructure": ["packages/backend/infrastructure/src"],
-      "@repo/backend-application": ["packages/backend/application/src"]
+      "@repo/backend-application": ["packages/backend/application/src"],
+      "@repo/di": ["packages/shared/di/src"]
     }
   },
-  "include": ["src/**/*", ".config/**/*", "server.ts"],
+  "include": ["src/**/*", "server.ts"],
   "references": [
     { "path": "../../packages/backend/domain" },
     { "path": "../../packages/backend/infrastructure" },
-    { "path": "../../packages/backend/application" }
+    { "path": "../../packages/backend/application" },
+    { "path": "../../packages/shared/di" }
   ]
 }
