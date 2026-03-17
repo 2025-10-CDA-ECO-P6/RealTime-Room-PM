@@ -1,4 +1,4 @@
-import { DIContainer } from "packages/shared/di/src/DIContainer";
+import { DIContainer } from "@repo/di";
 import { Server as HttpServer } from "node:http";
 import { Server as SocketIOServer } from "socket.io";
 

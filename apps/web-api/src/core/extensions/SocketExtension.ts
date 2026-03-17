@@ -1,12 +1,9 @@
 import { Server as HttpServer } from "node:http";
 import { Server as SocketIOServer } from "socket.io";
-import { DIContainer } from "packages/shared/di/src/DIContainer";
 import config from "../../configs/Config";
+import { DIContainer } from "@repo/di";
 
 export function SocketExtension(httpServer: HttpServer, container: DIContainer): SocketIOServer {
-  console.log("🔌 [Socket.io] Creating and configuring...");
-
-  // ========== Créer Socket.io ==========
   const socketIOServer = new SocketIOServer(httpServer, {
     path: config.socketIoPath,
     cors: {
@@ -14,28 +11,22 @@ export function SocketExtension(httpServer: HttpServer, container: DIContainer):
       methods: config.cors.methods,
       credentials: true,
     },
-    transports: ["websocket"], // ✅ WebSocket only (évite conflits CORS)
+    transports: ["websocket"],
     pingInterval: 25000,
     pingTimeout: 60000,
     serveClient: false,
     allowUpgrades: true,
   });
 
-  // ========== Lazy-Load: Injecter les handlers à la PREMIÈRE connexion ==========
   socketIOServer.on("connection", (socket) => {
-    console.log("📍 [Socket.io] New connection:", socket.id);
-
-    // ✅ Injection lazy: SocketMessageHandler est maintenant enregistré
     try {
-      const messageHandler = container.inject<any>("SocketMessageHandler");
-      messageHandler.handleConnection(socket);
+      const socketServer = container.inject<any>("SocketServer");
+      socketServer.handleConnection(socket);
     } catch (error) {
-      console.error("❌ [Socket.io] Failed to inject SocketMessageHandler:", error);
+      console.error("[Socket.io] Failed to inject SocketServer:", error);
       socket.disconnect();
     }
   });
-
-  console.log("🔌 [Socket.io] ✅ Ready");
 
   return socketIOServer;
 }

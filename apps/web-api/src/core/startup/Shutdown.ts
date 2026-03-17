@@ -6,16 +6,18 @@ export function Shutdown(httpServer: HttpServer, socketIOServer: SocketIOServer,
   const SHUTDOWN_TIMEOUT = config.timeout ?? 10000;
 
   const gracefulShutdown = (signal: string) => {
-    console.log(`\n\n📍 [${signal}] Shutting down...`);
+    console.log(`\n\n📍 [${signal}] Shutting down gracefully...`);
+
+    socketIOServer.disconnectSockets(true);
+    socketIOServer.close();
+    console.log("Socket.io closed");
 
     httpServer.close(() => {
       console.log("HTTP server closed");
-
-      socketIOServer.close();
-      console.log("Socket.io closed");
-
       console.log("Application shutdown complete");
-      process.exit(0);
+      setImmediate(() => {
+        process.exit(0);
+      });
     });
 
     setTimeout(() => {
@@ -27,4 +29,3 @@ export function Shutdown(httpServer: HttpServer, socketIOServer: SocketIOServer,
   process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
   process.on("SIGINT", () => gracefulShutdown("SIGINT"));
 }
- 

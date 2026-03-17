@@ -1,5 +1,5 @@
+import { DIContainer } from "@repo/di";
 import { NextFunction, Request, Response } from "express";
-import { DIContainer } from "packages/shared/di/src/DIContainer";
 import { Server as SocketIOServer } from "socket.io";
 
 export interface RequestWithDI extends Request {

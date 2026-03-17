@@ -1,29 +1,16 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "module": "commonjs",
-    "target": "ES2020",
-    "outDir": "./dist",
-    "baseUrl": "../../",
-    "incremental": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-    "paths": {
-      "@repo/backend-domain": ["packages/backend/domain/src"],
-      "@repo/backend-infrastructure": ["packages/backend/infrastructure/src"],
-      "@repo/backend-application": ["packages/backend/application/src"],
-      "@repo/di": ["packages/shared/di/src"]
-    }
+    "composite": true,
+    "rootDir": "src",
+    "outDir": "dist"
   },
-  "include": ["src/**/*", "server.ts"],
+  "include": ["src"],
+  "exclude": ["dist", "node_modules"],
   "references": [
+    { "path": "../../packages/shared/di" },
     { "path": "../../packages/backend/domain" },
-    { "path": "../../packages/backend/infrastructure" },
     { "path": "../../packages/backend/application" },
-    { "path": "../../packages/shared/di" }
+    { "path": "../../packages/backend/infrastructure" }
   ]
 }

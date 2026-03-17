@@ -1,5 +1,5 @@
+import { DIContainer } from "@repo/di";
 import { Server as SocketIOServer } from "socket.io";
-import { DIContainer } from "packages/shared/di/src/DIContainer";
 
 export interface AppConfigInitial {
   container: DIContainer;

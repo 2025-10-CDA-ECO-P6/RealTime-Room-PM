@@ -1,14 +1,11 @@
-import { SendMessageUseCase } from './features/messages/use-cases/SendMessageUseCase';
-import { IChatService } from '@repo/backend-domain/src/features/messages/services/IChatService';
-import { IMessagePublisher } from '@repo/backend-domain/src/features/messages/interfaces/IMessagePublisher';
-import { DIContainer } from '@repo/di/src/DIContainer';
- 
-export function registerApplicationServices(container: DIContainer): void {
+import { SendMessageUseCase } from "./features/messages/use-cases/SendMessageUseCase";
+import { ISendMessageUseCase } from "./features/messages/interfaces/ISendMessageUseCase";
+import { IMessagePublisher } from "@repo/backend-domain";
+import { DIContainer } from "@repo/di";
 
-  container.scoped('SendMessageUseCase', (c: DIContainer) => {
-    const chatService = c.inject<IChatService>('ChatService');
-    const messagePublisher = c.inject<IMessagePublisher>('MessagePublisher');
- 
-    return new SendMessageUseCase(chatService, messagePublisher);
+export function registerApplicationServices(container: DIContainer): void {
+  container.scoped<ISendMessageUseCase>("SendMessageUseCase", (c: DIContainer) => {
+    const messagePublisher = c.inject<IMessagePublisher>("MessagePublisher");
+    return new SendMessageUseCase(messagePublisher);
   });
 }

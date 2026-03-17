@@ -1,26 +1,25 @@
-import { IChatService } from "@repo/backend-domain/src/features/messages/services/IChatService";
-import { MessageDTO } from "../dtos/MessageDTO";
-import { SendMessageDTO } from "../dtos/SendMessageDTO";
-import { ISendMessageUseCase } from "./ISendMessageUseCase";
-import { IMessagePublisher } from "@repo/backend-domain/src/features/messages/interfaces/IMessagePublisher";
+import { ResponseMessageDTO } from "../dtos/ResponseMessageDTO";
+import { RequestMessageDTO } from "../dtos/RequestMessageDTO";
+import { ISendMessageUseCase } from "../interfaces/ISendMessageUseCase";
+import { IMessagePublisher, RoomId, UserId, MessageContent, Message } from "@repo/backend-domain";
 
 export class SendMessageUseCase implements ISendMessageUseCase {
-  constructor(
-    private readonly chatService: IChatService,
-    private readonly messagePublisher: IMessagePublisher,
-  ) {}
+  constructor(private readonly messagePublisher: IMessagePublisher) {}
 
-  execute(dto: SendMessageDTO): MessageDTO {
-    const message = this.chatService.addMessage(dto.userId, dto.content);
+  execute(roomId: string, dto: RequestMessageDTO): ResponseMessageDTO {
+    const room = RoomId.create(roomId);
+    const user = UserId.create(dto.userId);
+    const content = MessageContent.create(dto.content);
 
-    this.messagePublisher.publishMessage(message);
+    const message = Message.create(user, content);
+
+    this.messagePublisher.publishMessage(room, message);
 
     return {
-      id: message.id,
-      userId: message.userId,
-      content: message.content,
+      id: message.id.value,
+      userId: message.userId.value,
+      content: message.content.value,
       timestamp: message.timestamp,
     };
   }
 }
- 

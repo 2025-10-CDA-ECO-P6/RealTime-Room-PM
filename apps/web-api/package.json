@@ -1,18 +1,16 @@
 {
   "name": "web-api",
   "version": "1.0.0",
-  "description": "",
+  "description": "Express API Server",
   "main": "dist/server.js",
   "scripts": {
     "build": "tsc -b",
-    "dev": "ts-node -r tsconfig-paths/register server.ts",
-    "start": "node dist/server.js"
+    "dev": "ts-node -r tsconfig-paths/register src/server.ts",
+    "start": "node dist/server.js",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "packageManager": "pnpm@10.30.0",
   "dependencies": {
+    "@repo/backend-domain": "workspace:*",
     "@repo/backend-application": "workspace:*",
     "@repo/backend-infrastructure": "workspace:*",
     "@repo/di": "workspace:*",
@@ -25,6 +23,7 @@
     "@types/node": "^24.10.13",
     "nodemon": "^3.1.11",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "tsconfig-paths": "^4.2.0"
   }
 }

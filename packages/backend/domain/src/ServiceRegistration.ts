@@ -1,10 +1,6 @@
-import { DIContainer } from "@repo/di/src/DIContainer";
-import { ChatService } from "./features/messages/services/ChatService";
+import { DIContainer } from "@repo/di";
 
-export function registerDomainServices(container: DIContainer): void {
 
-  container.singleton("ChatService", (_c: DIContainer) => {
-    return new ChatService();
-  });
-
+export function registerDomainServices(_container: DIContainer): void {
+  // Add service registration here
 }

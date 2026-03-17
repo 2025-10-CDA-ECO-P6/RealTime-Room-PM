@@ -1,18 +1,21 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
     "target": "ES2020",
-    "moduleResolution": "Node",
-    "declaration": true,
+    "module": "commonjs",
+    "moduleResolution": "node",
     "strict": true,
+    "declaration": true,
+    "declarationMap": true,
     "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
-    "allowSyntheticDefaultImports": true
-  },
-  "baseUrl": ".",
-  "paths": {
-    "@repo/backend-domain": ["packages/backend/domain/src"],
-    "@repo/backend-infrastructure": ["packages/backend/infrastructure/src"],
-    "@repo/backend-application": ["packages/backend/application/src"]
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@repo/di": ["packages/shared/di/src"],
+      "@repo/backend-domain": ["packages/backend/domain/src"],
+      "@repo/backend-application": ["packages/backend/application/src"],
+      "@repo/backend-infrastructure": ["packages/backend/infrastructure/src"]
+    }
   }
 }

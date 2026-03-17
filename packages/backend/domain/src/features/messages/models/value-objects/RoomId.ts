@@ -1,11 +1,11 @@
-export class UserId {
+export class RoomId {
   constructor(readonly value: string) {
     if (!value || value.trim().length === 0) {
-      throw new Error("UserId cannot be empty");
+      throw new Error("RoomId cannot be empty");
     }
   }
 
-  equals(other: UserId): boolean {
+  equals(other: RoomId): boolean {
     return this.value === other.value;
   }
 
@@ -13,7 +13,7 @@ export class UserId {
     return this.value;
   }
 
-  static create(value: string): UserId {
-    return new UserId(value);
+  static create(value: string): RoomId {
+    return new RoomId(value);
   }
 }

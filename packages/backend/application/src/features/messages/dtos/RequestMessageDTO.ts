@@ -1,4 +1,4 @@
-export interface SendMessageDTO {
+export interface RequestMessageDTO {
   userId: string;
   content: string;
 }

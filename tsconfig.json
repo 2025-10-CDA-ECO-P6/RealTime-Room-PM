@@ -1,0 +1,10 @@
+{
+  "files": [],
+  "references": [
+    { "path": "packages/shared/di" },
+    { "path": "packages/backend/domain" },
+    { "path": "packages/backend/application" },
+    { "path": "packages/backend/infrastructure" },
+    { "path": "apps/web-api" }
+  ]
+}

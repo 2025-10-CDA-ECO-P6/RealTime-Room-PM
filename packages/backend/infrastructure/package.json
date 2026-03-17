@@ -2,16 +2,13 @@
   "name": "@repo/backend-infrastructure",
   "version": "1.0.0",
   "private": true,
-  "description": "",
+  "description": "Backend Infrastructure Layer",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc -b",
-    "test": "echo \"No test specified\" && exit 0"
+    "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "packageManager": "pnpm@10.30.0",
   "dependencies": {
     "@repo/backend-application": "workspace:*",
     "@repo/backend-domain": "workspace:*",
@@ -19,7 +16,6 @@
     "socket.io": "^4.8.3"
   },
   "devDependencies": {
-    "ts-node": "^10.9.2",
     "@types/node": "^24.10.13",
     "typescript": "^5.9.3"
   }

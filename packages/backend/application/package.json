@@ -2,22 +2,18 @@
   "name": "@repo/backend-application",
   "version": "1.0.0",
   "private": true,
-  "description": "",
+  "description": "Backend Application Layer",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc -b",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "packageManager": "pnpm@10.30.0",
   "dependencies": {
     "@repo/backend-domain": "workspace:*",
     "@repo/di": "workspace:*"
   },
   "devDependencies": {
-    "ts-node": "^10.9.2",
     "@types/node": "^24.10.13",
     "typescript": "^5.9.3"
   }

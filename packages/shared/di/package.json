@@ -1,18 +1,16 @@
 {
   "name": "@repo/di",
   "version": "1.0.0",
-    "private": true,
-  "description": "",
-  "main": "index.js",
+  "private": true,
+  "description": "Shared Dependency Injection Container",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc -b",
-    "test": "echo \"No test specified\" && exit 0"
+    "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "packageManager": "pnpm@10.32.1",
   "devDependencies": {
+    "@types/node": "^24.10.13",
     "typescript": "^5.9.3"
   }
 }

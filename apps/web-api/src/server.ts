@@ -1,0 +1,62 @@
+import { createApp } from "./app";
+import { StartupMessageConfig } from "./configs/StartupMessageConfig";
+import config from "./configs/Config";
+import { ServicesRegistrationExtension, SocketExtension } from "./core/extensions";
+import { ErrorHandlers } from "./core/startup/ErrorHandlers";
+import { Shutdown } from "./core/startup/Shutdown";
+import { StartupMessage } from "./core/startup/StartupMessage";
+import { Server as HttpServer } from "node:http";
+import { Server as SocketIOServer } from "socket.io";
+import { AppConfigInitial } from "./configs/AppConfig";
+import { ISocketMessageAdapter } from "./features/messages/interface/ISocketMessageHandler";
+import { DIContainer } from "@repo/di";
+
+async function bootstrap(): Promise<void> {
+  try {
+    const container: DIContainer = new DIContainer();
+    const appConfig: AppConfigInitial = {
+      container,
+      socketServer: undefined,
+    };
+    const app = createApp(appConfig);
+
+    const httpServer: HttpServer = app.listen(config.port, () => {
+      console.log(`[HTTP] Server listening on port ${config.port}`);
+    });
+
+    const socketIOServer: SocketIOServer = SocketExtension(httpServer, container);
+
+    ServicesRegistrationExtension(container, socketIOServer);
+
+    const messageHandler = container.inject<ISocketMessageAdapter>("SocketMessageHandler");
+    messageHandler.start();
+
+    const startupConfig: StartupMessageConfig = {
+      port: config.port,
+      nodeEnv: config.nodeEnv,
+      socketIoPath: config.socketIoPath,
+      cors: config.cors,
+    };
+
+    StartupMessage(startupConfig);
+    Shutdown(httpServer, socketIOServer, { timeout: 10000 });
+    ErrorHandlers();
+  } catch (error) {
+    console.error("❌ [Bootstrap] Failed to start application:", error);
+    if (error instanceof Error) {
+      console.error(error.stack);
+    }
+    process.exit(1);
+  }
+}
+
+async function main() {
+  try {
+    await bootstrap();
+  } catch (error) {
+    console.error("❌ [Bootstrap] Fatal error:", error);
+    process.exit(1);
+  }
+}
+
+main();
