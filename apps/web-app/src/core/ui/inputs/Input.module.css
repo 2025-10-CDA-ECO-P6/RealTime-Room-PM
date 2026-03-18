@@ -1,0 +1,82 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  width: 100%;
+}
+
+.label {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.inputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.icon {
+  position: absolute;
+  left: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  color: var(--color-text-secondary);
+}
+
+.input {
+  width: 100%;
+  height: 44px;
+  padding: 0 0.95rem;
+  font-size: var(--font-size-base);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  background: rgba(255, 252, 248, 0.95);
+  color: var(--color-text-primary);
+  transition:
+    border-color var(--transition-base),
+    box-shadow var(--transition-base),
+    background-color var(--transition-base);
+}
+
+.input::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+.input:hover:not(:disabled) {
+  border-color: var(--color-border-strong);
+}
+
+.input:focus {
+  outline: none;
+  border-color: rgba(199, 125, 82, 0.55);
+  box-shadow: 0 0 0 4px rgba(199, 125, 82, 0.12);
+}
+
+.input:disabled {
+  background: rgba(245, 237, 228, 0.75);
+  color: var(--color-text-tertiary);
+  cursor: not-allowed;
+}
+
+.error {
+  border-color: var(--color-accent);
+}
+
+.withIcon {
+  padding-left: 2.6rem;
+}
+
+.errorText {
+  font-size: 0.8rem;
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+.helperText {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+}

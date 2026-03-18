@@ -1,0 +1,38 @@
+.layout {
+  display: flex;
+  min-height: 0;
+  gap: var(--spacing-md);
+}
+
+.primary {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+}
+
+.secondary {
+  flex-shrink: 0;
+  min-height: 0;
+}
+
+.sm {
+  width: 220px;
+}
+
+.md {
+  width: 280px;
+}
+
+.lg {
+  width: 340px;
+}
+
+@media (max-width: 1024px) {
+  .layout {
+    flex-direction: column;
+  }
+
+  .secondary {
+    width: 100%;
+  }
+}

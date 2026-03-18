@@ -1,0 +1,22 @@
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.8rem 0.9rem;
+  border-radius: 16px;
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+}
+
+.label {
+  font-size: 0.84rem;
+  color: var(--color-text-secondary);
+}
+
+.value {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  text-align: right;
+}
