@@ -1,4 +1,3 @@
-export type { ChatRoomContextValue } from "./ChatRoomContextValue";
 export type { JoinRoomPayload } from "./JoinRoomPayload";
 export type { Message } from "./Message";
 export type { Room } from "./Room";

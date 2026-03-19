@@ -1,1 +1,1 @@
-export { initSocketService, getSocketService, type SocketService, type SocketServiceConfig } from "./SocketService";
+export { initSocketService, getSocketService, type SocketService } from "./SocketService";
