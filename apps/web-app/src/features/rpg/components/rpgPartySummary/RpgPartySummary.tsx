@@ -1,13 +1,13 @@
 import { InfoRow, SectionBlock } from "../../../../core/ui";
-import { useRpg } from "../../hooks/useRpg";
 
-export const RpgPartySummary: React.FC = () => {
-  const { heroName, players } = useRpg();
+interface RpgPartySummaryProps {
+  playerCount: number;
+}
 
+export const RpgPartySummary: React.FC<RpgPartySummaryProps> = ({ playerCount }) => {
   return (
-    <SectionBlock eyebrow="Groupe" title="Héros">
-      <InfoRow label="Nom" value={heroName} />
-      <InfoRow label="Joueurs" value={players.length} />
+    <SectionBlock eyebrow="Joueurs" title="connectés">
+      <InfoRow label="Connectés" value={playerCount} />
     </SectionBlock>
   );
 };

@@ -1,9 +1,9 @@
 import { io, Socket } from "socket.io-client";
 import { loggerService } from "../../../core/services";
+import type { CurrentUser } from "../../common/types";
 
 const SERVER_URL = import.meta.env.VITE_SERVER_URL || "http://localhost:3000";
-
-export interface SocketServiceConfig {
+interface SocketServiceConfig {
   url?: string;
   reconnection?: boolean;
   reconnectionDelay?: number;
@@ -14,22 +14,26 @@ export interface SocketServiceConfig {
 export interface RoomJoinedData {
   roomId: string;
   userId: string;
+  userName: string;
   userCount: number;
   roomLink: string;
 }
 
 export interface UserJoinedData {
   userId: string;
+  userName: string;
   userCount: number;
 }
 
 export interface UserLeftData {
   userId: string;
+  userName: string;
   userCount: number;
 }
 
 export interface MessageReceivedData {
   userId: string;
+  userName: string;
   content: string;
 }
 
@@ -38,9 +42,9 @@ export interface SocketService {
   disconnect: () => void;
   isConnected: () => boolean;
 
-  joinRoom: (roomId: string, userId: string) => void;
+  joinRoom: (roomId: string, user: CurrentUser) => void;
   leaveRoom: () => void;
-  sendMessage: (roomId: string, userId: string, content: string) => void;
+  sendMessage: (roomId: string, user: CurrentUser, content: string) => void;
 
   onConnect: (callback: () => void) => void;
   onDisconnect: (callback: (reason: string) => void) => void;
@@ -78,7 +82,7 @@ class SocketIOService implements SocketService {
     if (this.connectionPromise !== null) {
       return this.connectionPromise;
     }
-    
+
     this.connectionPromise = new Promise((resolve, reject) => {
       try {
         const socket = io(this.config.url, {
@@ -171,17 +175,21 @@ class SocketIOService implements SocketService {
     return this.socket?.connected ?? false;
   }
 
-  joinRoom(roomId: string, userId: string): void {
+  joinRoom(roomId: string, user: CurrentUser): void {
     if (!this.socket?.connected) {
       loggerService.warn("SocketIO", "Socket not connected");
       return;
     }
 
-    if (this.currentRoomId === roomId && this.currentUserId === userId) {
+    if (this.currentRoomId === roomId && this.currentUserId === user.userId) {
       return;
     }
 
-    this.socket.emit("join_room", { roomId, userId });
+    this.socket.emit("join_room", {
+      roomId,
+      userId: user.userId,
+      userName: user.userName,
+    });
   }
 
   leaveRoom(): void {
@@ -193,12 +201,17 @@ class SocketIOService implements SocketService {
     this.currentRoomId = null;
   }
 
-  sendMessage(roomId: string, userId: string, content: string): void {
+  sendMessage(roomId: string, user: CurrentUser, content: string): void {
     if (!this.socket?.connected) {
       return;
     }
 
-    this.socket.emit("send_message", { roomId, userId, content });
+    this.socket.emit("send_message", {
+      roomId,
+      userId: user.userId,
+      userName: user.userName,
+      content,
+    });
   }
 
   onConnect(callback: () => void): void {
@@ -233,15 +246,11 @@ class SocketIOService implements SocketService {
 let socketServiceInstance: SocketService | null = null;
 
 export function initSocketService(config?: SocketServiceConfig): SocketService {
-  if (!socketServiceInstance) {
-    socketServiceInstance = new SocketIOService(config);
-  }
+  socketServiceInstance ??= new SocketIOService(config);
   return socketServiceInstance;
 }
 
 export function getSocketService(): SocketService {
-  if (!socketServiceInstance) {
-    socketServiceInstance = new SocketIOService();
-  }
+  socketServiceInstance ??= new SocketIOService();
   return socketServiceInstance;
 }

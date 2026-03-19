@@ -48,7 +48,7 @@
 }
 
 .message {
-  max-width: 86%;
+  max-width: 78%;
   padding: 0.92rem 1rem;
   border-radius: 20px;
   display: flex;
@@ -59,24 +59,24 @@
   animation: slideIn 0.2s ease-out;
 }
 
-.type-user {
+.ownMessage {
   align-self: flex-end;
   background: linear-gradient(135deg, #f2d4bf, #efc6a8);
   border-bottom-right-radius: 8px;
 }
 
-.type-system,
-.type-info {
-  align-self: center;
-  background: rgba(244, 232, 220, 0.85);
-  color: var(--color-text-secondary);
-  box-shadow: none;
-}
-
-.message:not(.type-user):not(.type-system):not(.type-info) {
+.otherMessage {
   align-self: flex-start;
   background: rgba(255, 250, 245, 0.95);
   border-bottom-left-radius: 8px;
+}
+
+.systemMessage {
+  align-self: self-start;
+  max-width: 70%;
+  background: rgba(244, 232, 220, 0.85);
+  color: var(--color-text-secondary);
+  box-shadow: none;
 }
 
 .messageHeader {
@@ -87,7 +87,7 @@
   font-size: var(--font-size-xs);
 }
 
-.userId {
+.userName {
   font-weight: 800;
   color: var(--color-text-primary);
 }

@@ -2,19 +2,20 @@ import { useEffect } from "react";
 import { Panel } from "../../../../core/ui";
 import styles from "./ChatWindow.module.css";
 import { MessageList, MessageInput } from "..";
-import { useChatRoom, useUserId } from "../../hooks";
+import { useChatRoom } from "../../hooks";
 import { ConnectionStatus } from "../connectionStatus/ConnectionStatus";
+import { useCurrentUser } from "../../../common/hooks";
 
 export const ChatWindow: React.FC = () => {
   const chatRoom = useChatRoom();
-  const userId = useUserId();
+  const { userId, userName } = useCurrentUser();
 
   useEffect(() => {
-    if (userId && !chatRoom.isJoined) {
-      chatRoom.joinRoom(userId);
+    if (userId && userName && !chatRoom.isJoined) {
+      chatRoom.joinRoom({ userId, userName });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId, chatRoom.isJoined, chatRoom.joinRoom]);
+  }, [userId, userName, chatRoom.isJoined, chatRoom.joinRoom]);
 
   const headerContent = (
     <div className={styles.header}>
@@ -27,9 +28,9 @@ export const ChatWindow: React.FC = () => {
   );
 
   return (
-    <Panel title="" header={headerContent} hasBorder>
+    <Panel header={headerContent} hasBorder>
       <div className={styles.container}>
-        <MessageList messages={chatRoom.messages} />
+        <MessageList messages={chatRoom.messages} currentUserId={userId} />
         <MessageInput onSend={chatRoom.sendMessage} isDisabled={!chatRoom.isJoined} />
       </div>
     </Panel>

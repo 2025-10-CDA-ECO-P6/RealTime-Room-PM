@@ -8,6 +8,7 @@ export interface ChatRoomState {
   messages: Message[];
   connectionStatus: ConnectionStatus;
   isJoined: boolean;
+  userCount: number;
   error: string | null;
 }
 
@@ -17,5 +18,6 @@ export const initialState: ChatRoomState = {
   messages: [],
   connectionStatus: "disconnected",
   isJoined: false,
+  userCount: 0,
   error: null,
 };

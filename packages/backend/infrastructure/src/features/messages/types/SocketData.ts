@@ -1,6 +1,7 @@
 import { RoomId, UserId } from "@repo/backend-domain";
 
 export interface SocketData {
-  roomId?: RoomId;
-  userId?: UserId;
+  roomId: RoomId;
+  userId: UserId;
+  userName: string;
 }

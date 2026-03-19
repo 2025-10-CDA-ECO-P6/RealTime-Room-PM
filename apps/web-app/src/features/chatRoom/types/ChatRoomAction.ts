@@ -9,5 +9,6 @@ export type ChatRoomAction =
   | { type: "CLEAR_MESSAGES" }
   | { type: "SET_CONNECTION_STATUS"; payload: ConnectionStatus }
   | { type: "SET_IS_JOINED"; payload: boolean }
+  | { type: "SET_USER_COUNT"; payload: number }
   | { type: "SET_ERROR"; payload: string | null }
   | { type: "RESET" };

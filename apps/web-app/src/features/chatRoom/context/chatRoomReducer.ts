@@ -23,6 +23,9 @@ export function chatRoomReducer(state: ChatRoomState, action: ChatRoomAction): C
     case "SET_ERROR":
       return { ...state, error: action.payload };
 
+    case "SET_USER_COUNT":
+      return { ...state, userCount: action.payload };
+
     case "RESET":
       return initialState;
 

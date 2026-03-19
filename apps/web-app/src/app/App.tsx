@@ -2,7 +2,7 @@ import "./App.css";
 import { ChatRoomProvider } from "../features/chatRoom/context/ChatRoomProvider";
 import { useRoomIdFromUrl } from "../features/chatRoom/hooks/useRoomIdFromUrl";
 import { RpgProvider } from "../features/rpg/context/RpgProvider";
-import { GameChatShell } from "./components/gameChatShell/GameChatShell";
+import { GameShell } from "./components/gameChatShell/GameChatShell";
 
 import styles from "./App.module.css";
 
@@ -10,7 +10,7 @@ function AppContent() {
   return (
     <div className={styles.app}>
       <RpgProvider>
-        <GameChatShell />
+        <GameShell />
       </RpgProvider>
     </div>
   );

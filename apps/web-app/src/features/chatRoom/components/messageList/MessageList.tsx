@@ -4,6 +4,7 @@ import type { Message } from "../../types";
 
 interface MessageListProps {
   messages: Message[];
+  currentUserId: string;
 }
 
 const formatTime = (timestamp: number): string => {
@@ -13,7 +14,7 @@ const formatTime = (timestamp: number): string => {
   });
 };
 
-export const MessageList: React.FC<MessageListProps> = ({ messages }) => {
+export const MessageList: React.FC<MessageListProps> = ({ messages, currentUserId }) => {
   return (
     <div className={styles.container}>
       {messages.length === 0 ? (
@@ -26,13 +27,21 @@ export const MessageList: React.FC<MessageListProps> = ({ messages }) => {
       ) : (
         <ul className={styles.messagesList}>
           {messages.map((message) => {
-            const messageTypeClass = styles[`type-${message.type}`];
-            const messageClassName = [styles.message, messageTypeClass].filter(Boolean).join(" ");
+            const isSystem = message.type === "system" || message.type === "info";
+            const isOwnMessage = !isSystem && message.userId === currentUserId;
+
+            const messageClassName = [
+              styles.message,
+              isSystem ? styles.systemMessage : "",
+              isOwnMessage ? styles.ownMessage : styles.otherMessage,
+            ]
+              .filter(Boolean)
+              .join(" ");
 
             return (
               <li key={message.id} className={messageClassName}>
                 <div className={styles.messageHeader}>
-                  <span className={styles.userId}>{message.type === "system" ? "Info" : message.userId}</span>
+                  <span className={styles.userName}>{isSystem ? "Info" : message.userName}</span>
                   <time className={styles.timestamp}>{formatTime(message.timestamp)}</time>
                 </div>
                 <p className={styles.content}>{message.content}</p>

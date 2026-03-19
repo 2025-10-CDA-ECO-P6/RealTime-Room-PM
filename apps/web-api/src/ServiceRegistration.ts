@@ -1,4 +1,4 @@
-import { SocketMessageAdapter } from "./features/messages/socket/SocketMessageHandler";
+import { SocketMessageAdapter } from "./features/messages/socket/SocketMessageAdapter";
 import { Server as SocketIOServer } from "socket.io";
 
 import { ISocketMessageAdapter } from "./features/messages/interface/ISocketMessageHandler";
