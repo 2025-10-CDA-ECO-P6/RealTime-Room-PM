@@ -1,5 +1,5 @@
-import { UserId } from "../value-objects/UserId";
-import { UserName } from "../value-objects/UserName";
+import { UserId } from "../../../../core/models/value-objects/UserId";
+import { UserName } from "../../../../core/models/value-objects/UserName";
 import { MessageContent } from "../value-objects/MessageContent";
 import { MessageId } from "../value-objects/MessageId";
 

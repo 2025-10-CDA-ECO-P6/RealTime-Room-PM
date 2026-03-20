@@ -1,4 +1,4 @@
-import { Turn } from "../models/entities/Turn";
+import { Turn } from "../models/entities";
 
 export interface ITurnRepository {
   save(turn: Turn): Promise<void>;

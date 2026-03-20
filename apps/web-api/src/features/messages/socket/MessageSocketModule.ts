@@ -150,7 +150,9 @@ export class MessageSocketModule implements ISocketModule {
       `[MessageSocketModule] User ${context.userName} (${context.userId}) left room ${context.roomId} (${removeResult.userCount} users, didUserLeaveRoom=${removeResult.didUserLeaveRoom}, reason=${reason})`,
     );
 
-    this.clearConnectionContext(connection);
+    if (reason === "leave_room") {
+      this.clearConnectionContext(connection);
+    }
   }
 
   private clearConnectionContext(connection: ISocketConnection): void {

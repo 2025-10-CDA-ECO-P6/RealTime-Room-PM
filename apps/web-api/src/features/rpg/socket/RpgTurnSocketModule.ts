@@ -8,6 +8,8 @@ import {
 import { ISocketConnection, ISocketModule, ISocketServer } from "@repo/backend-infrastructure";
 import { StartTurnPayload, SubmitVotePayload, JoinTurnPayload, LeaveTurnPayload, TickTurnPayload } from "../types/type";
 
+const DISCONNECT_FINALIZATION_DURATION_MS = 1000;
+
 export class RpgTurnSocketModule implements ISocketModule {
   constructor(
     private readonly socketServer: ISocketServer,
@@ -50,6 +52,8 @@ export class RpgTurnSocketModule implements ISocketModule {
     try {
       const data = payload as StartTurnPayload;
 
+      console.log("[RpgTurnSocketModule] rpg_start_turn", data);
+
       const turn = await this.startTurnUseCase.execute({
         roomId: data.roomId,
         number: data.number,
@@ -64,7 +68,7 @@ export class RpgTurnSocketModule implements ISocketModule {
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to start turn";
-      console.error("[RpgSocketModule] rpg_start_turn error:", message);
+      console.error("[RpgTurnSocketModule] rpg_start_turn error:", message);
       connection.emit("error", { message });
     }
   }
@@ -79,6 +83,12 @@ export class RpgTurnSocketModule implements ISocketModule {
         return;
       }
 
+      console.log("[RpgTurnSocketModule] rpg_submit_vote", {
+        roomId: context.roomId,
+        userId: context.userId,
+        actionId: data.actionId,
+      });
+
       const turn = await this.submitVoteUseCase.execute({
         roomId: context.roomId,
         userId: context.userId,
@@ -92,7 +102,7 @@ export class RpgTurnSocketModule implements ISocketModule {
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to submit vote";
-      console.error("[RpgSocketModule] rpg_submit_vote error:", message);
+      console.error("[RpgTurnSocketModule] rpg_submit_vote error:", message);
       connection.emit("error", { message });
     }
   }
@@ -107,6 +117,11 @@ export class RpgTurnSocketModule implements ISocketModule {
         return;
       }
 
+      console.log("[RpgTurnSocketModule] rpg_join_turn", {
+        roomId: context.roomId,
+        userId: context.userId,
+      });
+
       const turn = await this.joinTurnPlayerUseCase.execute({
         roomId: context.roomId,
         userId: context.userId,
@@ -119,7 +134,7 @@ export class RpgTurnSocketModule implements ISocketModule {
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to join turn";
-      console.error("[RpgSocketModule] rpg_join_turn error:", message);
+      console.error("[RpgTurnSocketModule] rpg_join_turn error:", message);
       connection.emit("error", { message });
     }
   }
@@ -134,6 +149,11 @@ export class RpgTurnSocketModule implements ISocketModule {
         return;
       }
 
+      console.log("[RpgTurnSocketModule] rpg_leave_turn", {
+        roomId: context.roomId,
+        userId: context.userId,
+      });
+
       const turn = await this.leaveTurnPlayerUseCase.execute({
         roomId: context.roomId,
         userId: context.userId,
@@ -146,7 +166,7 @@ export class RpgTurnSocketModule implements ISocketModule {
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to leave turn";
-      console.error("[RpgSocketModule] rpg_leave_turn error:", message);
+      console.error("[RpgTurnSocketModule] rpg_leave_turn error:", message);
       connection.emit("error", { message });
     }
   }
@@ -162,6 +182,8 @@ export class RpgTurnSocketModule implements ISocketModule {
         return;
       }
 
+      console.log("[RpgTurnSocketModule] rpg_tick_turn", { roomId });
+
       const turn = await this.tickTurnUseCase.execute({
         roomId,
       });
@@ -172,7 +194,7 @@ export class RpgTurnSocketModule implements ISocketModule {
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to tick turn";
-      console.error("[RpgSocketModule] rpg_tick_turn error:", message);
+      console.error("[RpgTurnSocketModule] rpg_tick_turn error:", message);
       connection.emit("error", { message });
     }
   }
@@ -188,15 +210,15 @@ export class RpgTurnSocketModule implements ISocketModule {
       await this.leaveTurnPlayerUseCase.execute({
         roomId: context.roomId,
         userId: context.userId,
-        finalizationDurationMs: 1000,
+        finalizationDurationMs: DISCONNECT_FINALIZATION_DURATION_MS,
       });
 
       console.log(
-        `[RpgSocketModule] User ${context.userId} removed from active turn in room ${context.roomId} on disconnect`,
+        `[RpgTurnSocketModule] User ${context.userId} removed from active turn in room ${context.roomId} on disconnect`,
       );
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to handle RPG disconnect";
-      console.error("[RpgSocketModule] disconnect error:", message);
+      console.error("[RpgTurnSocketModule] disconnect error:", message);
     }
   }
 }

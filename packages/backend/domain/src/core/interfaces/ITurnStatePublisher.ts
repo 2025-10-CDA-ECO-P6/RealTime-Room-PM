@@ -1,5 +1,4 @@
-import { TurnResolution } from "../models/entities";
-import { Turn } from "../models/entities/Turn";
+import { Turn, TurnResolution } from "../models/entities";
 
 export interface ITurnStatePublisher {
   publishTurnUpdated(turn: Turn): Promise<void>;

@@ -1,16 +1,16 @@
 import { TurnResolutionReason } from "../../types";
-import { ActionId } from "../value-objects";
+import { TurnActionId } from "../value-objects";
 
 export class TurnResolution {
   constructor(
-    readonly selectedActionId: ActionId | null,
+    readonly selectedActionId: TurnActionId | null,
     readonly reason: TurnResolutionReason,
     readonly isTie: boolean,
     readonly resolvedAt: Date,
   ) {}
 
   static create(params: {
-    selectedActionId: ActionId | null;
+    selectedActionId: TurnActionId | null;
     reason: TurnResolutionReason;
     isTie: boolean;
     resolvedAt: Date;

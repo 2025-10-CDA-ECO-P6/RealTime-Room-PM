@@ -1,4 +1,4 @@
-export class VoteWindow {
+export class TurnVoteWindow {
   constructor(
     readonly startedAt: Date,
     readonly decisionDeadlineAt: Date,
@@ -13,8 +13,8 @@ export class VoteWindow {
     }
   }
 
-  withFinalizationDeadline(finalizationDeadlineAt: Date | null): VoteWindow {
-    return new VoteWindow(this.startedAt, this.decisionDeadlineAt, finalizationDeadlineAt);
+  withFinalizationDeadline(finalizationDeadlineAt: Date | null): TurnVoteWindow {
+    return new TurnVoteWindow(this.startedAt, this.decisionDeadlineAt, finalizationDeadlineAt);
   }
 
   isDecisionExpired(now: Date): boolean {

@@ -1,45 +1,44 @@
 import { IRandomChoicePolicy } from "../../interfaces";
 import { TurnStatus, TurnResolutionReason } from "../../types";
-import { TurnId, ActionId, PresentPlayers, VoteWindow } from "../value-objects";
+import { TurnId, TurnActionId, RoomId, UserId } from "../value-objects";
+import { PresentPlayers } from "./PresentPlayers";
+
 import { TurnResolution } from "./TurnResolution";
 import { TurnVote } from "./TurnVote";
+import { TurnVoteWindow } from "./TurnVoteWindow";
 
 interface StartTurnParams {
-  roomId: string;
+  roomId: RoomId;
   number: number;
-  presentPlayerIds: string[];
-  availableActionIds: string[];
+  presentPlayerIds: UserId[];
+  availableActionIds: TurnActionId[];
   startedAt: Date;
   decisionDurationMs: number;
 }
 
 export class Turn {
   readonly id: TurnId;
-  readonly roomId: string;
+  readonly roomId: RoomId;
   readonly number: number;
-  readonly availableActionIds: ActionId[];
+  readonly availableActionIds: TurnActionId[];
 
   private _status: TurnStatus;
   private _presentPlayers: PresentPlayers;
   private _votes: TurnVote[];
-  private _voteWindow: VoteWindow;
+  private _voteWindow: TurnVoteWindow;
   private _resolution: TurnResolution | null;
 
   private constructor(params: {
     id: TurnId;
-    roomId: string;
+    roomId: RoomId;
     number: number;
-    availableActionIds: ActionId[];
+    availableActionIds: TurnActionId[];
     status: TurnStatus;
     presentPlayers: PresentPlayers;
     votes: TurnVote[];
-    voteWindow: VoteWindow;
+    voteWindow: TurnVoteWindow;
     resolution: TurnResolution | null;
   }) {
-    if (!params.roomId || params.roomId.trim().length === 0) {
-      throw new Error("Turn roomId cannot be empty");
-    }
-
     if (params.number <= 0) {
       throw new Error("Turn number must be greater than 0");
     }
@@ -68,13 +67,13 @@ export class Turn {
 
     return new Turn({
       id: TurnId.generate(),
-      roomId: params.roomId.trim(),
+      roomId: params.roomId,
       number: params.number,
-      availableActionIds: params.availableActionIds.map((id) => ActionId.create(id)),
+      availableActionIds: params.availableActionIds,
       status: "open",
       presentPlayers: PresentPlayers.create(params.presentPlayerIds),
       votes: [],
-      voteWindow: new VoteWindow(params.startedAt, new Date(startedAtMs + params.decisionDurationMs), null),
+      voteWindow: new TurnVoteWindow(params.startedAt, new Date(startedAtMs + params.decisionDurationMs), null),
       resolution: null,
     });
   }
@@ -83,7 +82,7 @@ export class Turn {
     return this._status;
   }
 
-  get presentPlayers(): string[] {
+  get presentPlayers(): UserId[] {
     return this._presentPlayers.values();
   }
 
@@ -91,7 +90,7 @@ export class Turn {
     return [...this._votes];
   }
 
-  get voteWindow(): VoteWindow {
+  get voteWindow(): TurnVoteWindow {
     return this._voteWindow;
   }
 
@@ -107,36 +106,48 @@ export class Turn {
     return this._status === "closed";
   }
 
-  hasPlayer(userId: string): boolean {
+  hasPlayer(userId: UserId): boolean {
     return this._presentPlayers.has(userId);
   }
 
-  vote(userId: string, actionId: string, now: Date, finalizationDurationMs: number): void {
-    this.ensureOpenOrFinalizing();
-    this.ensurePresentPlayer(userId);
-
-    const normalizedAction = ActionId.create(actionId);
-
-    if (!this.hasAvailableAction(normalizedAction)) {
-      throw new Error(`Unknown action "${actionId}" for this turn`);
+  getNextCheckpointAt(): Date {
+    if (this.isClosed()) {
+      throw new Error("Closed turn has no next checkpoint");
     }
 
-    this._votes = [
-      ...this._votes.filter((vote) => !vote.isFrom(userId)),
-      TurnVote.create(userId, normalizedAction, now),
-    ];
+    if (this._status === "finalizing" && this._voteWindow.finalizationDeadlineAt !== null) {
+      return this._voteWindow.finalizationDeadlineAt;
+    }
+
+    return this._voteWindow.decisionDeadlineAt;
+  }
+
+  vote(userId: UserId, actionId: TurnActionId, now: Date, finalizationDurationMs: number): void {
+    this.ensureOpenOrFinalizing();
+
+    if (this._voteWindow.isDecisionExpired(now)) {
+      throw new Error("Cannot vote after decision deadline");
+    }
+
+    this.ensurePresentPlayer(userId);
+
+    if (!this.hasAvailableAction(actionId)) {
+      throw new Error(`Unknown action "${actionId.value}" for this turn`);
+    }
+
+    this._votes = [...this._votes.filter((vote) => !vote.isFrom(userId)), TurnVote.create(userId, actionId, now)];
 
     this.recomputeFinalizationState(now, finalizationDurationMs);
   }
 
-  joinPlayer(userId: string, now: Date, finalizationDurationMs: number): void {
+  joinPlayer(userId: UserId, now: Date, finalizationDurationMs: number): void {
     this.ensureOpenOrFinalizing();
 
     this._presentPlayers = this._presentPlayers.join(userId);
     this.recomputeFinalizationState(now, finalizationDurationMs);
   }
 
-  leavePlayer(userId: string, now: Date, finalizationDurationMs: number): void {
+  leavePlayer(userId: UserId, now: Date, finalizationDurationMs: number): void {
     this.ensureOpenOrFinalizing();
 
     if (!this._presentPlayers.has(userId)) {
@@ -173,15 +184,15 @@ export class Turn {
     return this.getUniqueVoterCount() === this.userCount;
   }
 
-  getVoteCountFor(actionId: string): number {
-    return this._votes.filter((vote) => vote.actionId.value === actionId).length;
+  getVoteCountFor(actionId: TurnActionId): number {
+    return this._votes.filter((vote) => vote.actionId.equals(actionId)).length;
   }
 
   getVoteCounts(): Map<string, number> {
     const counts = new Map<string, number>();
 
-    for (const action of this.availableActionIds) {
-      counts.set(action.value, 0);
+    for (const actionId of this.availableActionIds) {
+      counts.set(actionId.value, 0);
     }
 
     for (const vote of this._votes) {
@@ -191,7 +202,7 @@ export class Turn {
     return counts;
   }
 
-  getWinningActionIds(): ActionId[] {
+  getWinningActionIds(): TurnActionId[] {
     const counts = this.getVoteCounts();
     const max = Math.max(...counts.values());
 
@@ -199,7 +210,7 @@ export class Turn {
       return [];
     }
 
-    return this.availableActionIds.filter((action) => (counts.get(action.value) ?? 0) === max);
+    return this.availableActionIds.filter((actionId) => (counts.get(actionId.value) ?? 0) === max);
   }
 
   private close(now: Date, randomChoicePolicy: IRandomChoicePolicy, reason: TurnResolutionReason): void {
@@ -209,6 +220,7 @@ export class Turn {
 
     const winningActions = this.getWinningActionIds();
     const isTie = winningActions.length > 1;
+
     const selectedAction =
       winningActions.length === 0
         ? null
@@ -258,18 +270,18 @@ export class Turn {
     }
   }
 
-  private ensurePresentPlayer(userId: string): void {
+  private ensurePresentPlayer(userId: UserId): void {
     if (!this._presentPlayers.has(userId)) {
-      throw new Error(`User "${userId}" is not present in this turn`);
+      throw new Error(`User "${userId.value}" is not present in this turn`);
     }
   }
 
-  private hasAvailableAction(actionId: ActionId): boolean {
-    return this.availableActionIds.some((action) => action.equals(actionId));
+  private hasAvailableAction(actionId: TurnActionId): boolean {
+    return this.availableActionIds.some((item) => item.equals(actionId));
   }
 
   private getUniqueVoterCount(): number {
-    return new Set(this._votes.map((vote) => vote.userId)).size;
+    return new Set(this._votes.map((vote) => vote.userId.value)).size;
   }
 
   private getHighestVoteCount(): number {

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Socket Test RPG</title>
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+</head>
+<body>
+  <h2>Socket RPG Test</h2>
+
+  <div>
+    <input id="roomId" placeholder="roomId" value="TEST123" />
+    <input id="userId" placeholder="userId" value="user1" />
+    <input id="userName" placeholder="userName" value="Player1" />
+    <button onclick="joinRoom()">Join Room</button>
+  </div>
+
+  <hr/>
+
+  <div>
+    <button onclick="startTurn()">Start Turn</button>
+    <button onclick="joinTurn()">Join Turn</button>
+    <button onclick="leaveTurn()">Leave Turn</button>
+  </div>
+
+  <hr/>
+
+  <div>
+    <input id="actionId" placeholder="actionId" value="attack" />
+    <button onclick="vote()">Vote</button>
+  </div>
+
+  <hr/>
+
+  <pre id="log"></pre>
+
+  <script>
+    const socket = io("http://localhost:3000", {
+      path: "/socket.io",
+      transports: ["websocket"]
+    });
+
+    function log(msg) {
+      const el = document.getElementById("log");
+      el.textContent += msg + "\n";
+      console.log(msg);
+    }
+
+    socket.on("connect", () => {
+      log("Connected: " + socket.id);
+    });
+
+    socket.on("disconnect", () => {
+      log("Disconnected");
+    });
+
+    socket.on("error", (err) => {
+      log("ERROR: " + JSON.stringify(err));
+    });
+
+    // --- MESSAGE / PRESENCE ---
+    socket.on("room_joined", (data) => log("room_joined " + JSON.stringify(data)));
+    socket.on("user_joined", (data) => log("user_joined " + JSON.stringify(data)));
+    socket.on("user_left", (data) => log("user_left " + JSON.stringify(data)));
+    socket.on("message_received", (data) => log("message " + JSON.stringify(data)));
+
+    // --- RPG ---
+    socket.on("rpg_turn_updated", (data) => log("TURN UPDATED\n" + JSON.stringify(data, null, 2)));
+    socket.on("rpg_turn_closed", (data) => log("TURN CLOSED\n" + JSON.stringify(data, null, 2)));
+
+    function getInputs() {
+      return {
+        roomId: document.getElementById("roomId").value,
+        userId: document.getElementById("userId").value,
+        userName: document.getElementById("userName").value
+      };
+    }
+
+    function joinRoom() {
+      const { roomId, userId, userName } = getInputs();
+
+      socket.emit("join_room", {
+        roomId,
+        userId,
+        userName
+      });
+    }
+
+    function startTurn() {
+      const { roomId } = getInputs();
+
+      socket.emit("rpg_start_turn", {
+        roomId,
+        number: 1,
+        presentPlayerIds: ["user1", "user2"],
+        availableActionIds: ["attack", "defend", "heal"],
+        decisionDurationMs: 10000
+      });
+    }
+
+    function joinTurn() {
+      const { roomId, userId } = getInputs();
+
+      socket.emit("rpg_join_turn", {
+        roomId,
+        userId,
+        finalizationDurationMs: 5000
+      });
+    }
+
+    function leaveTurn() {
+      const { roomId, userId } = getInputs();
+
+      socket.emit("rpg_leave_turn", {
+        roomId,
+        userId,
+        finalizationDurationMs: 5000
+      });
+    }
+
+    function vote() {
+      const { roomId, userId } = getInputs();
+      const actionId = document.getElementById("actionId").value;
+
+      socket.emit("rpg_submit_vote", {
+        roomId,
+        userId,
+        actionId,
+        finalizationDurationMs: 5000
+      });
+    }
+  </script>
+</body>
+</html>
