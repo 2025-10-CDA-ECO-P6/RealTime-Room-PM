@@ -8,8 +8,9 @@ import { StartupMessage } from "./core/startup/StartupMessage";
 import { Server as HttpServer } from "node:http";
 import { Server as SocketIOServer } from "socket.io";
 import { AppConfigInitial } from "./configs/AppConfig";
-import { ISocketMessageAdapter } from "./features/messages/interface/ISocketMessageHandler";
+
 import { DIContainer } from "@repo/di";
+import { bootstrapSocketModules } from "./bootstrapSocketModules";
 
 async function bootstrap(): Promise<void> {
   try {
@@ -18,18 +19,18 @@ async function bootstrap(): Promise<void> {
       container,
       socketServer: undefined,
     };
+
     const app = createApp(appConfig);
 
     const httpServer: HttpServer = app.listen(config.port, () => {
       console.log(`[HTTP] Server listening on port ${config.port}`);
     });
 
-    const socketIOServer: SocketIOServer = SocketExtension(httpServer, container);
+    const socketIOServer: SocketIOServer = SocketExtension(httpServer);
 
     ServicesRegistrationExtension(container, socketIOServer);
 
-    const messageHandler = container.inject<ISocketMessageAdapter>("SocketMessageHandler");
-    messageHandler.start();
+    bootstrapSocketModules(container);
 
     const startupConfig: StartupMessageConfig = {
       port: config.port,
@@ -43,14 +44,16 @@ async function bootstrap(): Promise<void> {
     ErrorHandlers();
   } catch (error) {
     console.error("❌ [Bootstrap] Failed to start application:", error);
+
     if (error instanceof Error) {
       console.error(error.stack);
     }
+
     process.exit(1);
   }
 }
 
-async function main() {
+async function main(): Promise<void> {
   try {
     await bootstrap();
   } catch (error) {

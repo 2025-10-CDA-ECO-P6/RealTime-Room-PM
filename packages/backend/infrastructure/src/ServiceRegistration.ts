@@ -1,7 +1,6 @@
-import { SocketPublisher } from "./features/messages/services/SocketPublisher";
+import { SocketMessagePublisher } from "./features/messages/services/SocketMessagePublisher";
 import { Server } from "socket.io";
-import { SocketServer } from "./features/messages/services/SocketServer";
-import { ISocketServer } from "./features/messages/interface/ISocketServer";
+
 import { DIContainer } from "@repo/di";
 import {
   IClock,
@@ -11,14 +10,24 @@ import {
   ITurnStatePublisher,
 } from "@repo/backend-domain";
 import { InMemoryTurnRepository, SystemClock, RandomChoicePolicy, SocketTurnPublisher } from "./features";
+import { InMemorySocketPresenceStore, ISocketPresenceStore, ISocketServer, SocketIOServerAdapter } from "./core";
 
 export function registerInfrastructureServices(container: DIContainer, socketIOServer?: Server): void {
-  if (socketIOServer) {
-    container.singleton<IMessagePublisher>("MessagePublisher", () => new SocketPublisher(socketIOServer));
-    container.singleton<ITurnStatePublisher>("TurnStatePublisher", () => new SocketTurnPublisher(socketIOServer));
+  if (!socketIOServer) {
+    throw new Error("socketIOServer is required");
   }
 
-  container.singleton<ISocketServer>("SocketServer", () => new SocketServer());
+  container.singleton<ISocketServer>("SocketServer", () => new SocketIOServerAdapter(socketIOServer));
+  container.singleton<ISocketPresenceStore>("SocketPresenceStore", () => new InMemorySocketPresenceStore());
+
+  container.singleton<IMessagePublisher>("MessagePublisher", (c: DIContainer) => {
+    return new SocketMessagePublisher(c.inject<ISocketServer>("SocketServer"));
+  });
+
+  container.singleton<ITurnStatePublisher>("TurnStatePublisher", (c: DIContainer) => {
+    return new SocketTurnPublisher(c.inject<ISocketServer>("SocketServer"));
+  });
+
   container.singleton<ITurnRepository>("TurnRepository", () => new InMemoryTurnRepository());
   container.singleton<IClock>("Clock", () => new SystemClock());
   container.singleton<IRandomChoicePolicy>("RandomChoicePolicy", () => new RandomChoicePolicy());

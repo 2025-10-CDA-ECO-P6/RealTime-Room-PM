@@ -1,10 +1,10 @@
 import { Server as HttpServer } from "node:http";
 import { Server as SocketIOServer } from "socket.io";
 import config from "../../configs/Config";
-import { DIContainer } from "@repo/di";
 
-export function SocketExtension(httpServer: HttpServer, container: DIContainer): SocketIOServer {
-  const socketIOServer = new SocketIOServer(httpServer, {
+
+export function SocketExtension(httpServer: HttpServer): SocketIOServer {
+  return new SocketIOServer(httpServer, {
     path: config.socketIoPath,
     cors: {
       origin: config.cors.origin,
@@ -17,16 +17,4 @@ export function SocketExtension(httpServer: HttpServer, container: DIContainer):
     serveClient: false,
     allowUpgrades: true,
   });
-
-  socketIOServer.on("connection", (socket) => {
-    try {
-      const socketServer = container.inject<any>("SocketServer");
-      socketServer.handleConnection(socket);
-    } catch (error) {
-      console.error("[Socket.io] Failed to inject SocketServer:", error);
-      socket.disconnect();
-    }
-  });
-
-  return socketIOServer;
 }
