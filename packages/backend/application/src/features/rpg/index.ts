@@ -1,3 +1,3 @@
-export * from "./dtos";
+export * from "../../core/dtos";
 export * from "./interfaces";
-export * from "./usecases";
+export * from "../../core/usecases";

@@ -10,21 +10,72 @@ import {
 import { DIContainer } from "@repo/di";
 import {
   IStartTurnUseCase,
-  StartTurnUseCase,
   ISubmitVoteUseCase,
-  SubmitVoteUseCase,
   IJoinTurnPlayerUseCase,
-  JoinTurnPlayerUseCase,
   ILeaveTurnPlayerUseCase,
-  LeaveTurnPlayerUseCase,
   ITickTurnUseCase,
+  IGameFlowPolicy,
+  IRoomPresenceReader,
+  ITurnActionComposer,
+  ITurnActionRegistry,
+  ITurnActionResolverRegistry,
+  ITurnCycleOrchestrator,
+  ITurnScheduler,
+  TurnActionComposer,
+  TurnActionRegistry,
+  TurnActionResolverRegistry,
+  TurnCycleOrchestrator,
+  IStartGameUseCase,
+  StartGameUseCase,
+} from "./core";
+import {
+  StartTurnUseCase,
+  SubmitVoteUseCase,
+  JoinTurnPlayerUseCase,
+  LeaveTurnPlayerUseCase,
   TickTurnUseCase,
 } from "./features";
+import { DefaultGameFlowPolicy } from "./core/services/DefaultGameFlowPolicy";
 
 export function registerApplicationServices(container: DIContainer): void {
+  container.singleton<ITurnActionRegistry>("TurnActionRegistry", () => {
+    return new TurnActionRegistry();
+  });
+
+  container.singleton<ITurnActionComposer>("TurnActionComposer", (c: DIContainer) => {
+    return new TurnActionComposer(c.inject<ITurnActionRegistry>("TurnActionRegistry"));
+  });
+
+  container.singleton<ITurnActionResolverRegistry>("TurnActionResolverRegistry", () => {
+    return new TurnActionResolverRegistry();
+  });
+
+  container.singleton<IGameFlowPolicy>("GameFlowPolicy", () => {
+    return new DefaultGameFlowPolicy({
+      decisionDurationMs: 10000,
+    });
+  });
+
+  container.singleton<ITurnCycleOrchestrator>("TurnCycleOrchestrator", (c: DIContainer) => {
+    return new TurnCycleOrchestrator(
+      c.inject<ITurnRepository>("TurnRepository"),
+      c.inject<ITurnStatePublisher>("TurnStatePublisher"),
+      c.inject<IClock>("Clock"),
+      c.inject<IRandomChoicePolicy>("RandomChoicePolicy"),
+      c.inject<IRoomPresenceReader>("RoomPresenceReader"),
+      c.inject<ITurnScheduler>("TurnScheduler"),
+      c.inject<ITurnActionComposer>("TurnActionComposer"),
+      c.inject<ITurnActionResolverRegistry>("TurnActionResolverRegistry"),
+      c.inject<IGameFlowPolicy>("GameFlowPolicy"),
+    );
+  });
+
   container.scoped<ISendMessageUseCase>("SendMessageUseCase", (c: DIContainer) => {
-    const messagePublisher = c.inject<IMessagePublisher>("MessagePublisher");
-    return new SendMessageUseCase(messagePublisher);
+    return new SendMessageUseCase(c.inject<IMessagePublisher>("MessagePublisher"));
+  });
+
+  container.scoped<IStartGameUseCase>("StartGameUseCase", (c: DIContainer) => {
+    return new StartGameUseCase(c.inject<ITurnCycleOrchestrator>("TurnCycleOrchestrator"));
   });
 
   container.scoped<IStartTurnUseCase>("StartTurnUseCase", (c: DIContainer) => {
@@ -32,6 +83,7 @@ export function registerApplicationServices(container: DIContainer): void {
       c.inject<ITurnRepository>("TurnRepository"),
       c.inject<IClock>("Clock"),
       c.inject<ITurnStatePublisher>("TurnStatePublisher"),
+      c.inject<ITurnCycleOrchestrator>("TurnCycleOrchestrator"),
     );
   });
 
@@ -40,6 +92,7 @@ export function registerApplicationServices(container: DIContainer): void {
       c.inject<ITurnRepository>("TurnRepository"),
       c.inject<IClock>("Clock"),
       c.inject<ITurnStatePublisher>("TurnStatePublisher"),
+      c.inject<ITurnCycleOrchestrator>("TurnCycleOrchestrator"),
     );
   });
 
@@ -48,6 +101,7 @@ export function registerApplicationServices(container: DIContainer): void {
       c.inject<ITurnRepository>("TurnRepository"),
       c.inject<IClock>("Clock"),
       c.inject<ITurnStatePublisher>("TurnStatePublisher"),
+      c.inject<ITurnCycleOrchestrator>("TurnCycleOrchestrator"),
     );
   });
 
@@ -56,15 +110,14 @@ export function registerApplicationServices(container: DIContainer): void {
       c.inject<ITurnRepository>("TurnRepository"),
       c.inject<IClock>("Clock"),
       c.inject<ITurnStatePublisher>("TurnStatePublisher"),
+      c.inject<ITurnCycleOrchestrator>("TurnCycleOrchestrator"),
     );
   });
 
   container.scoped<ITickTurnUseCase>("TickTurnUseCase", (c: DIContainer) => {
     return new TickTurnUseCase(
+      c.inject<ITurnCycleOrchestrator>("TurnCycleOrchestrator"),
       c.inject<ITurnRepository>("TurnRepository"),
-      c.inject<IClock>("Clock"),
-      c.inject<IRandomChoicePolicy>("RandomChoicePolicy"),
-      c.inject<ITurnStatePublisher>("TurnStatePublisher"),
     );
   });
 }
