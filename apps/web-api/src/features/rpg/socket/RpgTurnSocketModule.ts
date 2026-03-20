@@ -1,19 +1,19 @@
 import {
   IJoinTurnPlayerUseCase,
   ILeaveTurnPlayerUseCase,
-  IStartTurnUseCase,
+  IStartGameUseCase,
   ISubmitVoteUseCase,
   ITickTurnUseCase,
 } from "@repo/backend-application";
 import { ISocketConnection, ISocketModule, ISocketServer } from "@repo/backend-infrastructure";
-import { StartTurnPayload, SubmitVotePayload, JoinTurnPayload, LeaveTurnPayload, TickTurnPayload } from "../types/type";
+import { SubmitVotePayload, JoinTurnPayload, LeaveTurnPayload, TickTurnPayload, StartGamePayload } from "../types/type";
 
 const DISCONNECT_FINALIZATION_DURATION_MS = 1000;
 
 export class RpgTurnSocketModule implements ISocketModule {
   constructor(
     private readonly socketServer: ISocketServer,
-    private readonly startTurnUseCase: IStartTurnUseCase,
+    private readonly startGameUseCase: IStartGameUseCase,
     private readonly submitVoteUseCase: ISubmitVoteUseCase,
     private readonly joinTurnPlayerUseCase: IJoinTurnPlayerUseCase,
     private readonly leaveTurnPlayerUseCase: ILeaveTurnPlayerUseCase,
@@ -22,8 +22,8 @@ export class RpgTurnSocketModule implements ISocketModule {
 
   register(): void {
     this.socketServer.onConnection((connection: ISocketConnection) => {
-      connection.on("rpg_start_turn", async (payload: unknown) => {
-        await this.handleStartTurn(connection, payload);
+      connection.on("rpg_start_game", async (payload: unknown) => {
+        await this.handleStartGame(connection, payload);
       });
 
       connection.on("rpg_submit_vote", async (payload: unknown) => {
@@ -48,27 +48,29 @@ export class RpgTurnSocketModule implements ISocketModule {
     });
   }
 
-  private async handleStartTurn(connection: ISocketConnection, payload: unknown): Promise<void> {
+  private async handleStartGame(connection: ISocketConnection, payload: unknown): Promise<void> {
     try {
-      const data = payload as StartTurnPayload;
+      const data = payload as StartGamePayload;
+      const context = connection.getContext();
+      const roomId = data.roomId ?? context.roomId;
 
-      console.log("[RpgTurnSocketModule] rpg_start_turn", data);
+      if (!roomId) {
+        connection.emit("error", { message: "roomId is required" });
+        return;
+      }
 
-      const turn = await this.startTurnUseCase.execute({
-        roomId: data.roomId,
-        number: data.number,
-        presentPlayerIds: data.presentPlayerIds,
-        availableActionIds: data.availableActionIds,
-        decisionDurationMs: data.decisionDurationMs,
+      console.log("[RpgTurnSocketModule] rpg_start_game", { roomId });
+
+      await this.startGameUseCase.execute({
+        roomId,
       });
 
-      connection.emit("rpg_start_turn_ack", {
+      connection.emit("rpg_start_game_ack", {
         success: true,
-        turn,
       });
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Failed to start turn";
-      console.error("[RpgTurnSocketModule] rpg_start_turn error:", message);
+      const message = error instanceof Error ? error.message : "Failed to start game";
+      console.error("[RpgTurnSocketModule] rpg_start_game error:", message);
       connection.emit("error", { message });
     }
   }

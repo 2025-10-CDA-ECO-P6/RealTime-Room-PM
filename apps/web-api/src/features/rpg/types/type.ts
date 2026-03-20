@@ -6,6 +6,10 @@ export type StartTurnPayload = {
   decisionDurationMs: number;
 };
 
+export type StartGamePayload = {
+  roomId?: string;
+};
+
 export type SubmitVotePayload = {
   actionId: string;
   finalizationDurationMs: number;

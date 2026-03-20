@@ -27,14 +27,13 @@ import {
   TurnCycleOrchestrator,
   IStartGameUseCase,
   StartGameUseCase,
-} from "./core";
-import {
-  StartTurnUseCase,
-  SubmitVoteUseCase,
   JoinTurnPlayerUseCase,
   LeaveTurnPlayerUseCase,
+  StartTurnUseCase,
+  SubmitVoteUseCase,
   TickTurnUseCase,
-} from "./features";
+} from "./core";
+
 import { DefaultGameFlowPolicy } from "./core/services/DefaultGameFlowPolicy";
 
 export function registerApplicationServices(container: DIContainer): void {

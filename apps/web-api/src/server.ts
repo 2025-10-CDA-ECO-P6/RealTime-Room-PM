@@ -11,6 +11,7 @@ import { AppConfigInitial } from "./configs/AppConfig";
 
 import { DIContainer } from "@repo/di";
 import { bootstrapSocketModules } from "./bootstrapSocketModules";
+import { bootstrapTurnModules } from "./bootstrapTurnModules";
 
 async function bootstrap(): Promise<void> {
   try {
@@ -29,7 +30,7 @@ async function bootstrap(): Promise<void> {
     const socketIOServer: SocketIOServer = SocketExtension(httpServer);
 
     ServicesRegistrationExtension(container, socketIOServer);
-
+    bootstrapTurnModules(container);
     bootstrapSocketModules(container);
 
     const startupConfig: StartupMessageConfig = {

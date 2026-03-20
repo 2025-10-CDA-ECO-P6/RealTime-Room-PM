@@ -1,6 +1,5 @@
 import { ITurnRepository, Turn } from "@repo/backend-domain";
 
-
 export class InMemoryTurnRepository implements ITurnRepository {
   private readonly turnsById = new Map<string, Turn>();
   private readonly currentTurnIdByRoomId = new Map<string, string>();
@@ -9,13 +8,14 @@ export class InMemoryTurnRepository implements ITurnRepository {
     this.turnsById.set(turn.id.value, turn);
 
     if (!turn.isClosed()) {
-      this.currentTurnIdByRoomId.set(turn.roomId, turn.id.value);
+      this.currentTurnIdByRoomId.set(turn.roomId.value, turn.id.value);
       return;
     }
 
-    const currentTurnId = this.currentTurnIdByRoomId.get(turn.roomId);
+    const currentTurnId = this.currentTurnIdByRoomId.get(turn.roomId.value);
+
     if (currentTurnId === turn.id.value) {
-      this.currentTurnIdByRoomId.delete(turn.roomId);
+      this.currentTurnIdByRoomId.delete(turn.roomId.value);
     }
   }
 
